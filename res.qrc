@@ -1,0 +1,25 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/MD-next.png</file>
+        <file>icons/MD-pause.png</file>
+        <file>icons/MD-play.png</file>
+        <file>icons/MD-previous.png</file>
+        <file>icons/MD-repeat.png</file>
+        <file>icons/MD-repeat-alt.png</file>
+        <file>icons/MD-repeat-once.png</file>
+        <file>icons/MD-shuffle.png</file>
+        <file>icons/media-podcast.png</file>
+        <file>icons/MD-shuffle-on.png</file>
+        <file>icons/MD-sequential.png</file>
+        <file>icons/file-add.png</file>
+        <file>icons/folder.png</file>
+        <file>icons/NoCover.png</file>
+        <file>icons/cancel.png</file>
+        <file>icons/window.png</file>
+        <file>icons/mini-lecteur.png</file>
+        <file>icons/window-stack.png</file>
+        <file>icons/search.png</file>
+        <file>icons/power-on.png</file>
+        <file>icons/MD-volume-3.png</file>
+    </qresource>
+</RCC>
