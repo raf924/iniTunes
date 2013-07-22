@@ -56,4 +56,6 @@ FORMS    += mainwindow.ui \
     minilecteur.ui \
     nowplayingwidget.ui \
     search.ui
+win32{
 RC_FILE = res.rc
+}
