@@ -27,10 +27,10 @@ Infos::Infos(const Song &song, QWidget *parent) :
 void Infos::modify()
 {
 
-    bool newTitle = song.title!=title->text();
-    bool newAlbum = song.album!=album->text();
-    bool newArtist =song.artist!=artist->text();
-    bool newGenre = song.genre!=genre->text();
+    bool newTitle = song["Title"].toString()!=title->text();
+    bool newAlbum = song["AlbumTitle"].toString()!=album->text();
+    bool newArtist =song["AlbumArtist"].toString()!=artist->text();
+    bool newGenre = song["Genre"].toString()!=genre->text();
     if(newGenre||newTitle||newAlbum||newArtist)
     {
         qDebug()<<"New tags";
@@ -53,7 +53,7 @@ void Infos::modify()
         }
         QProcess cmd;
         QStringList args;
-        args << "-jar" << "SetTag.jar"<<song.path<<options;
+        args << "-jar" << "SetTag.jar"<<song["Path"].toString()<<options;
         cmd.start("java",args);
         cmd.waitForFinished();
         emit songModified(song);
