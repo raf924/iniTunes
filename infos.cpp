@@ -8,12 +8,12 @@ Infos::Infos(const Song &song, QWidget *parent) :
     qDebug()<<buttonBox->isEnabled();
     setLayout(verticalLayout);
     this->song = song;
-    path->setText(song.path);
-    title->setText(song.title);
-    artist->setText(song.artist);
-    album->setText(song.album);
-    genre->setText(song.genre);
-    length->setText(song.d_length);
+    path->setText(song.value("Path").toString());
+    title->setText(song.value("Title").toString());
+    artist->setText(song.value("AlbumArtist").toString());
+    album->setText(song.value("AlbumTitle").toString());
+    genre->setText(song.value("Genre").toString());
+    length->setText(song.value("Length").toString());
     Library lib;
     QImage image;
     image.load(lib.artwork(song));

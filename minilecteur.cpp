@@ -62,9 +62,9 @@ void MiniLecteur::setPosition(qint64 seek)
 
 void MiniLecteur::setNewSong(const Song &song)
 {
-    seekBar->setMaximum(song.length);
-    artist->setText(song.artist+" -- "+song.album);
-    title->setText(song.title);
+    seekBar->setMaximum(song.value("Duration").toInt());
+    artist->setText(song.value("AlbumArtist",song.value("Author")).toString()+" -- "+song.value("AlbumTitle"));
+    title->setText(song.value("Title"));
     QString coverPath;
     if(QString(coverPath = lib.artwork(song)).isEmpty())
     {

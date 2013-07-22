@@ -79,7 +79,7 @@ void MainWindow::mkconnections()
 
 void MainWindow::open(const QString &filename)
 {
-    player.play(Library::getSong(filename));
+    player.play(Library::getTags(filename));
 }
 
 void MainWindow::createRemote()
@@ -133,7 +133,7 @@ void MainWindow::mkPlaylist(const Song & song)
     {
         qDebug()<<"Accepted";
         playlists->addPlaylist(di.textValue());
-        library.addSongInPlaylist(QCryptographicHash::hash(QFile::encodeName(song.path),QCryptographicHash::Md5),di.textValue());
+        library.addSongInPlaylist(QCryptographicHash::hash(QFile::encodeName(song.value("Path").toString()),QCryptographicHash::Md5),di.textValue());
     }
     else if(library.playlists().contains(di.textValue()))
     {

@@ -13,9 +13,6 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    //a.removeLibraryPath(a.libraryPaths().first());
-    qRegisterMetaType<Song>("Song");
-    qRegisterMetaTypeStreamOperators<Song>("Song");
     MainWindow w;
     QStringList args = a.arguments();
     QLocalSocket socket;
