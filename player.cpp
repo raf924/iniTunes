@@ -31,7 +31,7 @@ void Player::play(const Song &song)
 
 void Player::play(int index)
 {
-    qDebug()<<songList.at(index).path<<"playing";
+    qDebug()<<songList.at(index)["Path"]<<"playing";
     emit inPlaylist(true);
     playing = true;
     update(songList);

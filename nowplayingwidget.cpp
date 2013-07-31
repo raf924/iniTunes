@@ -72,8 +72,8 @@ void NowPlayingWidget::setPosition(qint64 value)
 void NowPlayingWidget::setSong(const Song &song)
 {
     tLength->setText(" "+song.value("Length").toString()+" ");
-    artist->setText("  "+song.value("AlbumArtist",song.value("Author")).toString()+" -- "+song.album+"  ");
-    title->setText(song.title);
+    artist->setText("  "+song.value("AlbumArtist",song.value("Author")).toString()+" -- "+song["AlbumTitle"].toString()+"  ");
+    title->setText(song["Title"].toString());
     tLength->setText(song.value("Length").toString());
     seekBar->setMaximum(song.value("Duration").toInt());
     QString coverPath;

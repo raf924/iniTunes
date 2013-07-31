@@ -34,7 +34,7 @@ void Table::setLibrary(Library *lib)
 
 void Table::addSong(const Song &song, int index)
 {
-    qDebug()<<song.title;
+    qDebug()<<song["Title"].toString();
     setSortingEnabled(false);
     QString toolt = "Nom:"+song["Title"].toString()
             +"\nDurée:"+song["Length"].toString()

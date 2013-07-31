@@ -107,7 +107,7 @@ void Remote::receive()
                     +song.value("Duration").toString()+"///"
                     +song.value("AlbumTitle").toString()+"///"
                     +song.value("AlbumArtist").toString()+"///"
-                    +song.value("Genre")
+                    +song.value("Genre").toString()
                  <<endl;
             Sleep(100);
         }
@@ -157,7 +157,7 @@ void Remote::newTrack(const Song & song)
                <<endl
               <<song.value("AlbumTitle").toString()
              <<endl
-            <<song.value("AlbumArtist")
+            <<song.value("AlbumArtist").toString()
             <<endl
             <<song.value("Genre").toString()
             <<endl

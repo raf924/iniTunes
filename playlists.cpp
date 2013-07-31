@@ -36,7 +36,7 @@ void Playlists::dropEvent(QDropEvent *event)
         foreach (QTableWidgetSelectionRange range, table->selectedRanges())
         {
             Song song = table->item(range.topRow(),0)->data(32).toMap();
-            emit songAdded(QCryptographicHash::hash(QFile::encodeName(song.path),QCryptographicHash::Md5),playlist->text());
+            emit songAdded(QCryptographicHash::hash(QFile::encodeName(song["Path"].toString()),QCryptographicHash::Md5),playlist->text());
         }
     }
 }
