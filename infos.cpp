@@ -8,12 +8,12 @@ Infos::Infos(const Song &song, QWidget *parent) :
     qDebug()<<buttonBox->isEnabled();
     setLayout(verticalLayout);
     this->song = song;
-    path->setText(song.value("Path").toString());
-    title->setText(song.value("Title").toString());
-    artist->setText(song.value("AlbumArtist").toString());
-    album->setText(song.value("AlbumTitle").toString());
-    genre->setText(song.value("Genre").toString());
-    length->setText(song.value("Length").toString());
+    path->setText(song.path);
+    title->setText(song.title);
+    artist->setText(song.artist);
+    album->setText(song.album);
+    genre->setText(song.genre);
+    length->setText(song.d_length);
     Library lib;
     QImage image;
     image.load(lib.artwork(song));
@@ -27,10 +27,10 @@ Infos::Infos(const Song &song, QWidget *parent) :
 void Infos::modify()
 {
 
-    bool newTitle = song["Title"].toString()!=title->text();
-    bool newAlbum = song["AlbumTitle"].toString()!=album->text();
-    bool newArtist =song["AlbumArtist"].toString()!=artist->text();
-    bool newGenre = song["Genre"].toString()!=genre->text();
+    bool newTitle = song.title!=title->text();
+    bool newAlbum = song.album!=album->text();
+    bool newArtist =song.artist!=artist->text();
+    bool newGenre = song.genre!=genre->text();
     if(newGenre||newTitle||newAlbum||newArtist)
     {
         qDebug()<<"New tags";
@@ -53,7 +53,7 @@ void Infos::modify()
         }
         QProcess cmd;
         QStringList args;
-        args << "-jar" << "SetTag.jar"<<song["Path"].toString()<<options;
+        args << "-jar" << "SetTag.jar"<<song.path<<options;
         cmd.start("java",args);
         cmd.waitForFinished();
         emit songModified(song);

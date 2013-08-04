@@ -103,12 +103,7 @@ void Remote::receive()
         foreach(Song song, songlist)
         {
             qDebug()<<"Sending a song";
-            text << song.value("Title").toString()+"///"
-                    +song.value("Duration").toString()+"///"
-                    +song.value("AlbumTitle").toString()+"///"
-                    +song.value("AlbumArtist").toString()+"///"
-                    +song.value("Genre").toString()
-                 <<endl;
+            text << song.title+"///"+song.length+"///"+song.album+"///"+song.artist+"///"+song.genre<<endl;
             Sleep(100);
         }
         text << "il"<<endl;
@@ -152,17 +147,7 @@ void Remote::newTrack(const Song & song)
         if(socket->localPort()!=serverPort()+1)
         {
             QTextStream text(socket);
-            text <<"New Song"<<endl
-                <<song.value("Title").toString()
-               <<endl
-              <<song.value("AlbumTitle").toString()
-             <<endl
-            <<song.value("AlbumArtist").toString()
-            <<endl
-            <<song.value("Genre").toString()
-            <<endl
-            <<song.value("Duration").toString()
-            <<endl;
+            text <<"New Song"<<endl<<song.title<<endl<<song.album<<endl<<song.artist<<endl<<song.genre<<endl<<song.length<<endl;
         }
     }
 }
@@ -202,7 +187,7 @@ void Remote::localreceive()
     case PLAY:
         qDebug()<<PLAY;
         QString filename = stream.readLine();
-        emit open(Library::getTags(filename));
+        emit open(Library::getSong(filename));
         break;
     }
 

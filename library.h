@@ -6,7 +6,16 @@
 #include <QMetaType>
 #include <QtCore>
 #include "musicbrainzclient.h"
-typedef QMap<QString, QVariant> Song;
+struct Song{
+    QString path;
+    QString title;
+    QString album;
+    QString artist;
+    int length;
+    QString genre;
+    QString d_length;
+};
+Q_DECLARE_METATYPE(Song)
 typedef QList<Song> SongList;
 class Library : public QObject
 {
@@ -19,7 +28,8 @@ public:
     explicit Library(QObject *parent = 0);
     QStringList playlists();
     void addSongInPlaylist(const Song &song, const QString &playlist);
-    static Song getTags(const QString & fi);
+    static QStringList getTags(const QString & fi);
+    static Song getSong(const QString & filename);
     SongList getSongs();
     QString artwork(const Song & song);
     void convert(const QString & filename);
@@ -51,5 +61,7 @@ public slots:
 
 
 };
+QDataStream &operator<<(QDataStream & out, const Song & song);
+QDataStream &operator>>(QDataStream & in, Song & song);
 
 #endif // LIBRARY_H

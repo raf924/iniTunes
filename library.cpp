@@ -44,7 +44,7 @@ QStringList Library::playlists()
 
 void Library::addSongInPlaylist(const Song &song, const QString &playlist)
 {
-    addSongInPlaylist(QCryptographicHash::hash(QFile::encodeName(song["Path"].toString()),QCryptographicHash::Md5),playlist);
+    addSongInPlaylist(QCryptographicHash::hash(QFile::encodeName(song.path),QCryptographicHash::Md5),playlist);
 }
 
 void Library::addFiles(const QStringList & files)
@@ -63,21 +63,21 @@ void Library::addFiles(const QStringList & files)
         {
 
             qDebug()<<"Adding file"<<p.availableMetaData()<<p.duration();
-            Song song = getTags(filename);
-            QStringList mbArtist = MusicBrainZClient::findArtist(song["Albumartist"].toString());
-            song["AlbumArtist"].toString() = mbArtist.last();
-            QStringList mbAlbum = MusicBrainZClient::findAlbum(song["AlbumTitle"].toString(),mbArtist.first());
-            song["AlbumTitle"].toString() = mbAlbum.last();
-            QString file = rmPath()+"/"+song["AlbumArtist"].toString()+"/"+song["AlbumTitle"].toString()+"/"+song["Title"].toString()+"."+filename.split(".").last();
+            Song song = getSong(filename);
+            QStringList mbArtist = MusicBrainZClient::findArtist(song.artist);
+            song.artist = mbArtist.last();
+            QStringList mbAlbum = MusicBrainZClient::findAlbum(song.album,mbArtist.first());
+            song.album = mbAlbum.last();
+            QString file = rmPath()+"/"+song.artist+"/"+song.album+"/"+song.title+"."+filename.split(".").last();
             qDebug()<<"New filename devised";
             if(!QFile(file).exists())
             {
                 QDir dir;
-                dir.mkpath(rmPath()+"/"+song["AlbumArtist"].toString()+"/"+song["AlbumTitle"].toString());
+                dir.mkpath(rmPath()+"/"+song.artist+"/"+song.album);
                 QFile::copy(filename,file);
 
             }
-            song["Path"].toString() = file;
+            song.path = file;
             addFileR(song);
         }
         else
@@ -91,22 +91,70 @@ void Library::addFiles(const QStringList & files)
     }
 }
 
-Song Library::getTags(const QString &fi)
+QStringList Library::getTags(const QString &fi)
 {
+    qDebug()<<"Getting tags";
+    QStringList tags;
+    QString r;
+    QProcess cmd;
+    QStringList args;
+    args << "-jar"<<"MusicTag.jar"<<fi;
+    cmd.start("java",args);
+    cmd.waitForFinished();
+    r = cmd.readAll();
+    qDebug()<<r;
+    tags = r.split("\n");
+    QString length;
+    QString titre;
+    QString album;
+    QString artiste;
+    QString genre;
+    foreach (QString tag, tags)
+    {
+        if(tag.startsWith("Nom:"))
+        {
+            titre = tag.split(":").at(1);
+        }
+        else if (tag.startsWith("Album:"))
+        {
+            album = tag.split(":").at(1);
+        }
+        else if (tag.startsWith("Artiste:"))
+        {
+            artiste = tag.split(":").at(1);
+        }
+        else if (tag.startsWith("Genre:"))
+        {
+            genre = tag.split(":").at(1);
+        }
+    }
+    tags.clear();
     QMediaPlayer m;
     m.setMedia(QMediaContent(QUrl::fromLocalFile(fi)));
     QEventLoop loop;
     connect(&m,SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),&loop,SLOT(quit()));
     loop.exec();
+    length = QString::number(m.duration());
     QTime time(0,0);
-    time = time.addMSecs(m.duration());
-    Song metaData;
-    foreach (QString metakey, m.availableMetaData()) {
-        metaData[metakey] = m.metaData(metakey);
-    }
-    metaData["Length"] = time.toString(time.hour()>0?"hh:mm:ss":"mm:ss");
-    metaData["Path"] = fi;
-    return metaData;
+    time = time.addMSecs(length.toInt());
+    tags << titre << album << artiste<<genre<<length<<(time.hour()>0?time.toString("hh:mm:ss"):time.toString("mm:ss"));
+    qDebug()<<"Tags extracted"<<tags;
+    return tags;
+
+}
+
+Song Library::getSong(const QString &filename)
+{
+    Song song;
+    QStringList tags = getTags(filename);
+    song.path = filename;
+    song.title = tags[0];
+    song.album = tags[1];
+    song.artist = tags[2];
+    song.genre = tags[3];
+    song.length = tags[4].toInt();
+    song.d_length = tags[5];
+    return song;
 }
 
 SongList Library::getSongs()
@@ -120,7 +168,7 @@ SongList Library::getSongs()
 
 QString Library::artwork(const Song &song)
 {
-    enter(song.value("AlbumArtist").toString(),song.value("AlbumTitle").toString());
+    enter(song.artist,song.album);
     settings->beginGroup("Artwork");
     QString art = settings->value("Path").toString();
     leave();
@@ -134,7 +182,7 @@ void Library::convert(const QString & filename)
     list <<"-f"<<"mp3"<< "-i"<<filename<<"-ab"<<"320k"<<"-y"<<filename;
     cmd->execute("ffmpeg",list);
     cmd->waitForFinished();
-    addFileR(getTags(filename));
+    addFileR(getSong(filename));
 }
 
 QStringList Library::getAlbums(const QString & artist)
@@ -225,8 +273,8 @@ void Library::addSongInPlaylist(const QString & file_rep,const QString & playlis
 
 void Library::deleteSong(const Song &song, bool deleteFile)
 {
-    QString file_rep = QCryptographicHash::hash(QFile::encodeName(song.value("Path").toString()),QCryptographicHash::Md5);
-    enter(song.value("AlbumArtist").toString(),song.value("AlbumTitle").toString());
+    QString file_rep = QCryptographicHash::hash(QFile::encodeName(song.path),QCryptographicHash::Md5);
+    enter(song.artist,song.album);
     foreach (QString key, settings->childKeys())
     {
         if(settings->value(key).toString()==file_rep)
@@ -251,7 +299,7 @@ void Library::deleteSong(const Song &song, bool deleteFile)
     settings->endGroup();
     if(deleteFile)
     {
-        QFile::remove(song.value("Path").toString());
+        QFile::remove(song.path);
     }
     emit libraryChanged(this);
 }
@@ -268,18 +316,18 @@ void Library::newPlaylist(const QString & name)
 void Library::addFileR(const Song & song)
 {
 
-    QString file_rep(QCryptographicHash::hash(QFile::encodeName(song.value("Path").toString()),QCryptographicHash::Md5));
+    QString file_rep(QCryptographicHash::hash(QFile::encodeName(song.path),QCryptographicHash::Md5));
     settings->beginGroup("Songs");
     if(!settings->contains(file_rep))
     {
-        settings->setValue(file_rep,song);
+        settings->setValue(file_rep,qVariantFromValue(song));
         qDebug()<<"Song In LIb";
         settings->endGroup();
-        enter(song.value("AlbumArtist").toString(),song.value("AlbumTitle").toString());
+        enter(song.artist,song.album);
         if(settings->childGroups().count()==0)
         {
             settings->beginGroup("Artwork");
-            settings->setValue("Path",CoverProvider::getCover(song.value("AlbumArtist").toString(),song.value("AlbumTitle").toString(),QStandardPaths::writableLocation(QStandardPaths::DataLocation)));
+            settings->setValue("Path",CoverProvider::getCover(song.artist,song.album,QStandardPaths::writableLocation(QStandardPaths::DataLocation)));
             settings->endGroup();
         }
         settings->setValue(QString::number(settings->childKeys().count()>0?settings->childKeys().last().toInt()+1:0),file_rep);
@@ -300,8 +348,8 @@ void Library::addFileR(const Song & song)
 void Library::modifSong(const Song &song)
 {
     deleteSong(song,false);
-    addFiles(song.value("Path").toString().split(" "));
-    QFile::remove(song.value("Path").toString());
+    addFiles(song.path.split(" "));
+    QFile::remove(song.path);
 }
 
 void Library::leave()
@@ -354,6 +402,21 @@ void Library::moveFiles()
     }
 }
 
+
+QDataStream &operator <<(QDataStream &out, const Song &song)
+{
+    out << song.path << song.title << song.album << song.artist  << song.length<< song.genre << song.d_length;
+    return out;
+}
+
+
+QDataStream &operator >>(QDataStream &in, Song &song)
+{
+    in >> song.path >> song.title >> song.album >> song.artist  >> song.length>> song.genre >> song.d_length;
+    return in;
+}
+
+
 QStringList Library::values(const QStringList &keys)
 {
     QStringList vals;
@@ -371,8 +434,8 @@ SongList Library::songs(const QStringList &file_refs)
     {
         if(settings->contains(key))
         {
-            Song song = settings->value(key).toMap();
-            qDebug()<<song["Path"].toString();
+            Song song =settings->value(key).value<Song>();
+            qDebug()<<song.path;
             slist<<song;
         }
     }

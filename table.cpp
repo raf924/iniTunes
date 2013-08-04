@@ -34,19 +34,15 @@ void Table::setLibrary(Library *lib)
 
 void Table::addSong(const Song &song, int index)
 {
-    qDebug()<<song["Title"].toString();
+    qDebug()<<song.title;
     setSortingEnabled(false);
-    QString toolt = "Nom:"+song["Title"].toString()
-            +"\nDurée:"+song["Length"].toString()
-            +"\nAlbum:"+song["AlbumTitle"].toString()
-            +"\nArtist:"+song["AlbumArtist"].toString()
-            +"\nGenre:"+song["Genre"].toString();
+    QString toolt = "Nom:"+song.title+"\nDurée:"+song.d_length+"\nAlbum:"+song.album+"\nArtist:"+song.artist+"\nGenre:"+song.genre;
     insertRow(rowCount());
-    QTableWidgetItem *title =  new QTableWidgetItem(song["Title"].toString());
-    QTableWidgetItem *album = new QTableWidgetItem(song["AlbumTitle"].toString());
-    QTableWidgetItem *artist = new QTableWidgetItem(song["AlbumArtist"].toString());
-    QTableWidgetItem *length = new QTableWidgetItem(song["Length"].toString());
-    QTableWidgetItem *genre = new QTableWidgetItem(song["Genre"].toString());
+    QTableWidgetItem *title =  new QTableWidgetItem(song.title);
+    QTableWidgetItem *album = new QTableWidgetItem(song.album);
+    QTableWidgetItem *artist = new QTableWidgetItem(song.artist);
+    QTableWidgetItem *length = new QTableWidgetItem(song.d_length);
+    QTableWidgetItem *genre = new QTableWidgetItem(song.genre);
     setItem(rowCount()-1,0,title);
     setItem(rowCount()-1,1,length);
     setItem(rowCount()-1,2,album);
@@ -57,7 +53,7 @@ void Table::addSong(const Song &song, int index)
     for(int i = 0;i<columnCount();i++)
     {
         item(rowCount()-1,i)->setTextAlignment(Qt::AlignCenter);
-        item(rowCount()-1,i)->setData(32,song);
+        item(rowCount()-1,i)->setData(32,qVariantFromValue(song));
         item(rowCount()-1,i)->setData(33,index);
         item(rowCount()-1,i)->setToolTip(toolt);
         int textSize = fontMetrics().width(item(rowCount()-1,i)->text());
@@ -147,8 +143,8 @@ void Table::showContextMenu(const QPoint &point)
         QList<Infos *> infosList;
         foreach (QTableWidgetSelectionRange range, selectedRanges())
         {
-            Song song = item(range.topRow(),0)->data(32).toMap();
-            qDebug()<<song["Path"].toString();
+            Song song = item(range.topRow(),0)->data(32).value<Song>();
+            qDebug()<<song.path;
             Infos * infos = new Infos(song);
             infosList << infos;
             connect(infos,SIGNAL(songModified(Song)),SIGNAL(songModified(Song)));
@@ -177,7 +173,7 @@ void Table::deleteCurrentItem()
 {
     foreach (QTableWidgetSelectionRange range, selectedRanges())
     {
-        Song song = item(range.topRow(),0)->data(32).toMap();
+        Song song = item(range.topRow(),0)->data(32).value<Song>();
         removeRow(range.topRow());
         emit deleteSong(song,true);
     }
@@ -193,7 +189,7 @@ void Table::modifSong(const Song &song)
 void Table::addToPlaylist()
 {
     QAction * action = qobject_cast<QAction *>(sender());
-    library->addSongInPlaylist(selected->data(32).toMap(),action->text());
+    library->addSongInPlaylist(selected->data(32).value<Song>(),action->text());
 }
 
 void Table::sort()
@@ -229,10 +225,10 @@ void Table::setQuery(const QString &tag, int criteria)
     {
         Song song = songlist.at(i);
         bool condition;
-        bool title = song["Title"].toString().contains(tag,Qt::CaseInsensitive);
-        bool artiste = song["AlbumArtist"].toString().contains(tag,Qt::CaseInsensitive);
-        bool album = song["AlbumTitle"].toString().contains(tag,Qt::CaseInsensitive);
-        bool genre = song["Genre"].toString().contains(tag,Qt::CaseInsensitive);
+        bool title = song.title.contains(tag,Qt::CaseInsensitive);
+        bool artiste = song.artist.contains(tag,Qt::CaseInsensitive);
+        bool album = song.album.contains(tag,Qt::CaseInsensitive);
+        bool genre = song.genre.contains(tag,Qt::CaseInsensitive);
         switch(criteria)
         {
         case Tout:

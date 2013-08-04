@@ -16,13 +16,13 @@ Player::Player(QObject *parent) :
 
 void Player::play(const QString &filename)
 {
-    play(Library::getTags(filename));
+    play(Library::getSong(filename));
 }
 
 void Player::play(const Song &song)
 {
     emit inPlaylist(false);
-    player.setMedia(QMediaContent(QUrl::fromLocalFile(song.value("Path").toString())));
+    player.setMedia(QMediaContent(QUrl::fromLocalFile(song.path)));
     player.play();
     playing = true;
     emit currentSongChanged(song);
@@ -31,7 +31,7 @@ void Player::play(const Song &song)
 
 void Player::play(int index)
 {
-    qDebug()<<songList.at(index)["Path"]<<"playing";
+    qDebug()<<songList.at(index).path<<"playing";
     emit inPlaylist(true);
     playing = true;
     update(songList);
@@ -53,7 +53,7 @@ void Player::update(const SongList & list)
     QMediaPlaylist *plist = new QMediaPlaylist;
     foreach (Song song, songList)
     {
-        plist->addMedia(QMediaContent(QUrl::fromLocalFile(song.value("Path").toString())));
+        plist->addMedia(QMediaContent(QUrl::fromLocalFile(song.path)));
     }
     player.setPlaylist(plist);
     connect(player.playlist(),SIGNAL(currentIndexChanged(int)),SLOT(sendSong(int)));
